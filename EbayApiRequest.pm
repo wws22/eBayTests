@@ -84,13 +84,7 @@ eBay API request handler. Based on HTTP::Request
     use LWP::UserAgent;
     use eBayConfig qw(
         %LWP_OPT
-        $API_COMPATIBILITY_LEVEL
-        $API_ENDPOINT
-        $SITEID
         $RUNAME
-        $APP_NAME
-        $DEV_NAME
-        $CERT_NAME
         $MAIN_TOKEN
     );
     # Create a user agent object
