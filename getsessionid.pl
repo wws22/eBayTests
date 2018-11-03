@@ -9,13 +9,7 @@ use EbayApiRequest;
 
 use EbayConfig qw(
     %LWP_OPT
-    $API_COMPATIBILITY_LEVEL
-    $API_ENDPOINT
-    $SITEID
     $RUNAME
-    $APP_NAME
-    $DEV_NAME
-    $CERT_NAME
     $MAIN_TOKEN
 );
 
