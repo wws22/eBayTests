@@ -8,16 +8,19 @@ use LWP::UserAgent;
 use EbayApiRequest;
 use XML::XPath;
 use XML::XPath::XMLParser;
+use Carp qw(croak cluck);
 
 use EbayConfig qw(
     %LWP_OPT
     $SIGNIN_ENDPOINT
     $RUNAME
     $MAIN_TOKEN
+    $USER_TOKEN_FILE
+    $USER_TOKEN
 );
 
 if( ! $ARGV[0] ){
-    print "Usage: fetchtoken.pl <Session_ID>  >.user_token\n";
+    print "Usage: fetchtoken.pl <Session_ID>\n";
     exit '65';
 }
 my $sessionID = $ARGV[0];
@@ -59,9 +62,19 @@ my $token = $xpa->getNodeText('/FetchTokenResponse/eBayAuthToken');
 if( $token eq q{} ){
     die "Something wrong:\n".$res->content."\n";
 }else{
-    print STDERR "Client's token was fetched successfully. Expired at:".
-        $xpa->getNodeText('/FetchTokenResponse/HardExpirationTime')."\n";
-    print $xpa->getNodeText('/FetchTokenResponse/eBayAuthToken')."\n";
+
+    if( $USER_TOKEN_FILE ne q{ } ){
+        if( open( my $fh, '>', $USER_TOKEN_FILE ) ) {
+            print $fh $token;
+            close($fh) or croak "Can't close $USER_TOKEN_FILE\n";
+            print "Client's token was fetched successfully into: '$USER_TOKEN_FILE'. Token will expire at:".
+                $xpa->getNodeText('/FetchTokenResponse/HardExpirationTime')."\n";
+        }
+    }else{
+        print STDERR "Client's token was fetched successfully. Token will expire at:".
+            $xpa->getNodeText('/FetchTokenResponse/HardExpirationTime')."\n";
+        print $token."\n";
+    }
 }
 
 1;

@@ -15,6 +15,8 @@ use EbayConfig qw(
     $DEV_NAME
     $CERT_NAME
     $MAIN_TOKEN
+    $USER_TOKEN
+    $USER_TOKEN_FILE
 );
 
 sub new {
