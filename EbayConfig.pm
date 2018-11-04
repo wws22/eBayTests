@@ -7,6 +7,7 @@ use Exporter 'import';
 our @EXPORT_OK   = qw(
     %LWP_OPT
     $API_COMPATIBILITY_LEVEL
+    $SIGNIN_ENDPOINT
     $API_ENDPOINT
     $SITEID
     $RUNAME
@@ -26,6 +27,7 @@ use strict;
 use warnings;
 #
 our $API_COMPATIBILITY_LEVEL = '1031';
+our $SIGNIN_ENDPOINT = 'https://signin.sandbox.ebay.com/ws/eBayISAPI.dll';
 our $API_ENDPOINT = 'https://api.sandbox.ebay.com/ws/api.dll';
 our %LWP_OPT = ( ssl_opts => { verify_hostname => 0 }, # Use 0 for sandbox
     agent => 'MyApp/0.1'

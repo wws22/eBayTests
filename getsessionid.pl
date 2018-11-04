@@ -2,13 +2,16 @@
 
 use strict;
 use warnings;
+use version; our $VERSION = qv(1.01);
 use Net::SSL;
 use LWP::UserAgent;
-use version; our $VERSION = qv(1.01);
 use EbayApiRequest;
+use XML::XPath;
+use XML::XPath::XMLParser;
 
 use EbayConfig qw(
     %LWP_OPT
+    $SIGNIN_ENDPOINT
     $RUNAME
     $MAIN_TOKEN
 );
@@ -38,10 +41,18 @@ $req->content($body);
 my $res = $ua->request($req);
 
 # Check the outcome of the response
-if($res->is_success){
-    print $res->content, "\n";
-}else{
-    print $res->status_line, "\n";
+if(! $res->is_success){
+    die $res->status_line."\n";
 }
+
+
+my $xpa = XML::XPath->new( xml => $res->content );
+my $sessionID = $xpa->getNodeText('/GetSessionIDResponse/SessionID');
+
+if( $sessionID eq q{} ){
+    die "There are no SessioID in response:\n".$res->content."\n";
+}
+
+print $SIGNIN_ENDPOINT.'?SignIn&RUName='.$RUNAME.'&SessID='.$sessionID."\n";
 
 1;
