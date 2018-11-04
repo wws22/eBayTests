@@ -7,6 +7,7 @@ use Carp qw(cluck croak);
 use Exporter 'import';
 our @EXPORT_OK   = qw(
     %LWP_OPT
+    $MY_PUBLIC_IP
     $API_COMPATIBILITY_LEVEL
     $SIGNIN_ENDPOINT
     $API_ENDPOINT
@@ -43,6 +44,11 @@ use strict;
 use warnings;
 #
 our $API_COMPATIBILITY_LEVEL = '1031';
+our $MY_PUBLIC_IP = 'XXX.XXX.XXX.XXX';  # The public IP address of the machine from which the request is sent.
+                                        # Your application captures that IP address and includes it in a call request.
+                                        # eBay evaluates requests for safety (also see the BotBlock container
+                                        # in the request and response of this call).
+
 our $SIGNIN_ENDPOINT = 'https://signin.sandbox.ebay.com/ws/eBayISAPI.dll';
 our $API_ENDPOINT = 'https://api.sandbox.ebay.com/ws/api.dll';
 our %LWP_OPT = ( ssl_opts => { verify_hostname => 0 }, # Use 0 for sandbox
