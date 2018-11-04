@@ -31,8 +31,8 @@ my $body=<<'_EOT_';
     <MessageID>001</MessageID>
 </GetSessionIDRequest>
 _EOT_
-$body =~ s/_TOKEN_/$MAIN_TOKEN/ms;
-$body =~ s/_RUNAME_/$RUNAME/ms;
+$body =~ s/_TOKEN_/$MAIN_TOKEN/gms;
+$body =~ s/_RUNAME_/$RUNAME/gms;
 
 # Apply the content
 $req->content($body);

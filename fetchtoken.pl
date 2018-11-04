@@ -47,8 +47,8 @@ sub main {
     <SessionID>_SESSION_ID_</SessionID>
 </FetchTokenRequest>
 _EOT_
-    $body =~ s/_TOKEN_/$MAIN_TOKEN/ms;
-    $body =~ s/_SESSION_ID_/$sessionID/ms;
+    $body =~ s/_TOKEN_/$MAIN_TOKEN/gms;
+    $body =~ s/_SESSION_ID_/$sessionID/gms;
 
     # Apply the content
     $req->content($body);
