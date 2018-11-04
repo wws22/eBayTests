@@ -42,9 +42,8 @@ my $res = $ua->request($req);
 
 # Check the outcome of the response
 if(! $res->is_success){
-    die $res->status_line."\n";
+    die 'Request failed: '.$res->status_line."\n";
 }
-
 
 my $xpa = XML::XPath->new( xml => $res->content );
 my $sessionID = $xpa->getNodeText('/GetSessionIDResponse/SessionID');
