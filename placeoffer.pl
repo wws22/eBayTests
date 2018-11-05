@@ -20,17 +20,17 @@ use EbayConfig qw(
 );
 
 use Readonly;
-Readonly my $SOME_CODE => 000; # TODO!
+Readonly my $USAGE_CODE => 65; # Status code for exit with USAGE info
 
 if( not defined($USER_TOKEN) or $USER_TOKEN eq q{} ){
     print "You have to fetch the client's identification token at first.\n".
         "Please use fetchtoken.pl\n";
-    exit 65;
+    exit $USAGE_CODE;
 }
 
 if( not $ARGV[1] > 0 or not looks_like_number($ARGV[1]) or $ARGV[1] <= 0  ){
     print "Usage: placeoffer.pl <ItemID> <MaxBid> [CurrencyID]\n";
-    exit 65;
+    exit $USAGE_CODE;
 }
 my $ItemID = $ARGV[0];
 my $MaxBid = $ARGV[1];
@@ -42,6 +42,9 @@ if( defined($ARGV[2]) ){
 main();
 
 sub main {
+    my %user = get_user();   # Fetch the current UserID and another required info
+    # It's not necessary to PlaceOffer but this info is needed to analyze the result of the bid.
+
     # Create a user agent object
     my $ua = LWP::UserAgent->new(%LWP_OPT);
 
@@ -93,6 +96,36 @@ _EOT_
 
     return 1;
 }
+
+sub get_user {
+    my $ua = LWP::UserAgent->new(%LWP_OPT);
+    my $req = EbayApiRequest->new('GetUser');
+    my $body = <<'_EOT_';
+<?xml version="1.0" encoding="utf-8"?>
+<GetUserRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>_TOKEN_</eBayAuthToken>
+  </RequesterCredentials>
+</GetUserRequest>
+_EOT_
+    $body =~ s/_TOKEN_/$USER_TOKEN/gms;
+    $req->content($body);
+
+    my $res = $ua->request($req);
+    if (!$res->is_success) {
+        die 'GetUser request failed: ' . $res->status_line . "\n";
+    }
+    my $xpa = XML::XPath->new(xml => $res->content);
+    if( $xpa->getNodeText('/GetUserResponse/Ack') ne 'Success' ){
+        my $doc = XMLin $res->content, forcearray => 1;
+        die "GetUser request failed:\n".(XMLout $doc, xmldecl => 1, rootname => 'GetUserResponse')."\n";
+    }
+    my %user;
+    $user{Email} = $xpa->getNodeText('/GetUserResponse/User/Email').q{};
+    $user{UserID} = $xpa->getNodeText('/GetUserResponse/User/UserID').q{};
+    return %user;
+}
+
 
 1;
 __END__
