@@ -22,15 +22,15 @@ use EbayConfig qw(
 use Readonly;
 Readonly my $SOME_CODE => 000; # TODO!
 
-if( !defined($USER_TOKEN) or $USER_TOKEN eq '' ){
+if( not defined($USER_TOKEN) or $USER_TOKEN eq q{} ){
     print "You have to fetch the client's identification token at first.\n".
         "Please use fetchtoken.pl\n";
     exit 65;
 }
 
-if( ! $ARGV[1] > 0 or ! looks_like_number($ARGV[1]) or $ARGV[1] <= 0  ){
+if( not $ARGV[1] > 0 or not looks_like_number($ARGV[1]) or $ARGV[1] <= 0  ){
     print "Usage: placeoffer.pl <ItemID> <MaxBid> [CurrencyID]\n";
-    exit '65';
+    exit 65;
 }
 my $ItemID = $ARGV[0];
 my $MaxBid = $ARGV[1];
