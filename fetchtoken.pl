@@ -23,10 +23,11 @@ use EbayConfig qw(
 use Readonly;
 Readonly my $NOT_READY_CODE => 21_916_017; # The end user has not completed Auth
 Readonly my $STRANGE_NOT_READY_CODE => 16_117; # The end user login but didn't make permission yet
+Readonly my $USAGE_CODE => 65; # Status code for exit with USAGE info
 
 if( ! $ARGV[0] ){
     print "Usage: fetchtoken.pl <Session_ID>\n";
-    exit '65';
+    exit $USAGE_CODE;
 }
 my $sessionID = $ARGV[0];
 
