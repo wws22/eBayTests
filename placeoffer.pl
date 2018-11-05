@@ -6,12 +6,12 @@ use version; our $VERSION = qv(1.01);
 use Net::SSL;
 use LWP::UserAgent;
 use EbayApiRequest;
+use XML::Simple;
 use XML::XPath;
 use XML::XPath::XMLParser;
 use HTML::Entities;
 use Carp qw(croak cluck);
 use Scalar::Util qw(looks_like_number);
-use XML::Simple;
 
 use EbayConfig qw(
     %LWP_OPT
