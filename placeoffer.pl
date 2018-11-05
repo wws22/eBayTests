@@ -11,6 +11,7 @@ use XML::XPath::XMLParser;
 use HTML::Entities;
 use Carp qw(croak cluck);
 use Scalar::Util qw(looks_like_number);
+use XML::Simple;
 
 use EbayConfig qw(
     %LWP_OPT
@@ -69,7 +70,7 @@ _EOT_
     $body =~ s/_END_USER_IP_/$MY_PUBLIC_IP/gms;
     $body =~ s/_CURRENCY_ID_/$CurrencyID/gms;
     $body =~ s/_MAX_BID_/$MaxBid/gms;
-print $body."\n======================\n";
+
     # Apply the content
     $req->content($body);
 
@@ -82,49 +83,18 @@ print $body."\n======================\n";
     }
 
     my $xpa = XML::XPath->new(xml => $res->content);
-    print $res->content . "\n";
-}
-__END__
-
     my $code = $xpa->getNodeText('/FetchTokenResponse/Ack');
     if( $code ne 'Success' ){
-        if( $code eq 'Failure' ){
-            if( $xpa->getNodeText('FetchTokenResponse/Errors/ErrorCode') == $NOT_READY_CODE ){
-                print decode_entities($xpa->getNodeText('FetchTokenResponse/Errors/ShortMessage'))."\n";
-                return 0;
-            }
-        }
-        die "Request has no SUCCESS flag:\n".$res->content."\n";
-    }
-    my $token = $xpa->getNodeText('/FetchTokenResponse/eBayAuthToken');
-    if( $token eq q{} ){
-        die "Something wrong:\n".$res->content."\n";
-    }else{
 
-        if( $USER_TOKEN_FILE ne q{ } ){
-            if( open( my $fh, '>', $USER_TOKEN_FILE ) ) {
-                print $fh $token;
-                close($fh) or croak "Can't close $USER_TOKEN_FILE\n";
-                print "Client's token was fetched successfully into: '$USER_TOKEN_FILE'. Token will expire at: ".
-                    $xpa->getNodeText('/FetchTokenResponse/HardExpirationTime')."\n";
-            }
-        }else{
-            print STDERR "Client's token was fetched successfully. Token will expire at: ".
-                $xpa->getNodeText('/FetchTokenResponse/HardExpirationTime')."\n";
-            print $token."\n";
-        }
     }
+
+    my $doc = XMLin $res->content, forcearray => 1;
+    print XMLout $doc, xmldecl => 1, rootname => 'PlaceOfferResponse';
+
     return 1;
 }
 
 1;
 __END__
-<FetchTokenResponse
-  xmlns="urn:ebay:apis:eBLBaseComponents">
-  <Timestamp>2018-11-04T09:06:54.082Z</Timestamp>
-  <Ack>Success</Ack>
-  <Version>1031</Version>
-  <Build>E1031_CORE_APISIGNIN_18564253_R1</Build>
-  <eBayAuthToken>...</eBayAuthToken>
-<HardExpirationTime>2020-04-27T09:02:02.000Z</HardExpirationTime>
-</FetchTokenResponse>
+
+
