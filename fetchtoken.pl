@@ -21,8 +21,8 @@ use EbayConfig qw(
 );
 
 use Readonly;
-Readonly my $NOT_READY_CODE => 21_916_017; # The end user has not completed Auth
-Readonly my $STRANGE_NOT_READY_CODE => 16_117; # The end user login but didn't make permission yet
+Readonly my $NOT_READY_CODE => '21916017'; # The end user has not completed Auth
+Readonly my $STRANGE_NOT_READY_CODE => '16117'; # The end user login but didn't make permission yet
 Readonly my $USAGE_CODE => 65; # Status code for exit with USAGE info
 
 if( ! $ARGV[0] ){
@@ -68,10 +68,10 @@ _EOT_
     if( $code ne 'Success' ){
         if( $code eq 'Failure' ){
             my $err = $xpa->getNodeText('/FetchTokenResponse/Errors/ErrorCode');
-            if(  $err == $NOT_READY_CODE ){
+            if(  $err eq $NOT_READY_CODE ){
                 print decode_entities($xpa->getNodeText('/FetchTokenResponse/Errors/ShortMessage'))."\n";
                 return 0;
-            }elsif( $err == $STRANGE_NOT_READY_CODE ){
+            }elsif( $err eq $STRANGE_NOT_READY_CODE ){
                 print "The end user login but didn't make permission yet. That is very strange error!\n";
                 print "Really      : The end user has not completed Auth & Auth sign in flow.\n";
                 print "But Error is: ".decode_entities($xpa->getNodeText('/FetchTokenResponse/Errors/ShortMessage'))."\n";
