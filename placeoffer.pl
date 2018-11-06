@@ -21,6 +21,7 @@ use EbayConfig qw(
 
 use Readonly;
 Readonly my $USAGE_CODE => 65; # Status code for exit with USAGE info
+Readonly my $BID_TOO_LOW => '12210'; # Bid Too Low
 
 if( not defined($USER_TOKEN) or $USER_TOKEN eq q{} ){
     print "You have to fetch the client's identification token at first.\n".
@@ -84,15 +85,48 @@ _EOT_
     if (!$res->is_success) {
         die 'Request failed: ' . $res->status_line . "\n";
     }
-
     my $xpa = XML::XPath->new(xml => $res->content);
-    my $code = $xpa->getNodeText('/FetchTokenResponse/Ack');
-    if( $code ne 'Success' ){
 
+    my $status = $xpa->getNodeText('/PlaceOfferResponse/Ack');
+    if( $status ne 'Success' ){
+
+        my $err = $xpa->getNodeText('/PlaceOfferResponse/Error/ErrorCode');
+        if( $err eq $BID_TOO_LOW ){
+            print "Bid too low\n";
+            return 0;
+        }else{
+            my $doc = XMLin $res->content, forcearray => 1;
+
+            cluck 'Something wrong during request: '.
+                decode_entities($xpa->getNodeText('/PlaceOfferResponse/Errors/LongMessage'))."\n".
+                "----------------------------------------------\n".
+                (XMLout $doc, xmldecl => 1, rootname => 'PlaceOfferResponse').
+                "----------------------------------------------\n";
+
+            # Check bidder
+            if( $xpa->getNodeText('/PlaceOfferResponse/SellingStatus/HighBidder/UserID') ne $user{UserID} ) {
+                return 0;
+            }
+        }
     }
 
-    my $doc = XMLin $res->content, forcearray => 1;
-    print XMLout $doc, xmldecl => 1, rootname => 'PlaceOfferResponse';
+    my $CurrentPrice = $xpa->getNodeText('/PlaceOfferResponse/SellingStatus/CurrentPrice');
+
+    if( $xpa->getNodeText('/PlaceOfferResponse/SellingStatus/ReserveMet') eq 'false' ){
+        print 'Reserve not meet! Current price: '.$CurrentPrice."\n";
+        return 0;
+    }
+
+    if( $xpa->getNodeText('/PlaceOfferResponse/SellingStatus/HighBidder/UserID') eq $user{UserID} ){
+        # We almost win
+        print 'We are the highest bidder! Current price: '.$CurrentPrice."\n";
+    }else{
+        # Another bidder win
+        print 'You are not the highest bidder! Current price: '.$CurrentPrice."\n";
+        return 0;
+    }
+    #my $doc = XMLin $res->content, forcearray => 1;
+    #print XMLout $doc, xmldecl => 1, rootname => 'PlaceOfferResponse';
 
     return 1;
 }
