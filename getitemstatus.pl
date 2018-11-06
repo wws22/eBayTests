@@ -15,7 +15,6 @@ use Scalar::Util qw(looks_like_number);
 
 use EbayConfig qw(
     %LWP_OPT
-    $MY_PUBLIC_IP
     $USER_TOKEN
 );
 
