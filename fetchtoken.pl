@@ -25,7 +25,7 @@ Readonly my $NOT_READY_CODE => '21916017'; # The end user has not completed Auth
 Readonly my $STRANGE_NOT_READY_CODE => '16117'; # The end user login but didn't make permission yet
 Readonly my $USAGE_CODE => 65; # Status code for exit with USAGE info
 
-if( ! $ARGV[0] ){
+if( ! defined($ARGV[0]) ){
     print "Usage: fetchtoken.pl <Session_ID>\n";
     exit $USAGE_CODE;
 }
