@@ -49,10 +49,13 @@ sub main {
     # Create a user agent object
     my $ua = LWP::UserAgent->new(%LWP_OPT);
 
-    # Prepare the request object
-    my $req = EbayApiRequest->new('PlaceOffer');
-    # https://developer.ebay.com/DevZone/build-test/test-tool/default.aspx?index=0&api=trading&call=PlaceOffer&variation=xml
-    my $body = <<'_EOT_';
+    my $xml=testxml();
+    if( $xml eq q{} ) {
+
+        # Prepare the request object
+        my $req = EbayApiRequest->new('PlaceOffer');
+        # https://developer.ebay.com/DevZone/build-test/test-tool/default.aspx?index=0&api=trading&call=PlaceOffer&variation=xml
+        my $body = <<'_EOT_';
 <?xml version="1.0" encoding="utf-8"?>
 <PlaceOfferRequest xmlns="urn:ebay:apis:eBLBaseComponents">
 <!-- This call works only in Sandbox. To use this call in Production, the APPID needs to be whitelisted-->
@@ -69,39 +72,43 @@ sub main {
     </Offer>
 </PlaceOfferRequest>
 _EOT_
-    $body =~ s/_TOKEN_/$USER_TOKEN/gms;
-    $body =~ s/_ITEM_ID_/$ItemID/gms;
-    $body =~ s/_END_USER_IP_/$MY_PUBLIC_IP/gms;
-    $body =~ s/_CURRENCY_ID_/$CurrencyID/gms;
-    $body =~ s/_MAX_BID_/$MaxBid/gms;
+        $body =~ s/_TOKEN_/$USER_TOKEN/gms;
+        $body =~ s/_ITEM_ID_/$ItemID/gms;
+        $body =~ s/_END_USER_IP_/$MY_PUBLIC_IP/gms;
+        $body =~ s/_CURRENCY_ID_/$CurrencyID/gms;
+        $body =~ s/_MAX_BID_/$MaxBid/gms;
 
-    # Apply the content
-    $req->content($body);
+        # Apply the content
+        $req->content($body);
 
-    # Pass request to the user agent and get a response back
-    my $res = $ua->request($req);
+        # Pass request to the user agent and get a response back
+        my $res = $ua->request($req);
 
-    # Check the outcome of the response
-    if (!$res->is_success) {
-        die 'Request failed: ' . $res->status_line . "\n";
+        # Check the outcome of the response
+        if (!$res->is_success) {
+            die 'Request failed: ' . $res->status_line . "\n";
+        }
+        $xml = $res->content;
     }
-    my $xpa = XML::XPath->new(xml => $res->content);
+    my $xpa = XML::XPath->new(xml => $xml);
 
     my $status = $xpa->getNodeText('/PlaceOfferResponse/Ack');
     if( $status ne 'Success' ){
 
-        my $err = $xpa->getNodeText('/PlaceOfferResponse/Error/ErrorCode');
+        my $err = $xpa->getNodeText('/PlaceOfferResponse/Errors/ErrorCode');
         if( $err eq $BID_TOO_LOW ){
             print "Bid too low\n";
             return 0;
         }else{
-            my $doc = XMLin $res->content, forcearray => 1;
+            # Cluck
+            my $doc = XMLin $xml, forcearray => 1;
 
-            cluck 'Something wrong during request: '.
-                decode_entities($xpa->getNodeText('/PlaceOfferResponse/Errors/LongMessage'))."\n".
+            cluck "Something wrong during request!\n".
                 "----------------------------------------------\n".
                 (XMLout $doc, xmldecl => 1, rootname => 'PlaceOfferResponse').
-                "----------------------------------------------\n";
+                "----------------------------------------------\n".
+                "LongMessage: ".
+                    decode_entities($xpa->getNodeText('/PlaceOfferResponse/Errors/LongMessage'))."\n";
 
             # Check bidder
             if( $xpa->getNodeText('/PlaceOfferResponse/SellingStatus/HighBidder/UserID') ne $user{UserID} ) {
@@ -125,7 +132,7 @@ _EOT_
         print 'You are not the highest bidder! Current price: '.$CurrentPrice."\n";
         return 0;
     }
-    #my $doc = XMLin $res->content, forcearray => 1;
+    #my $doc = XMLin $xml, forcearray => 1;
     #print XMLout $doc, xmldecl => 1, rootname => 'PlaceOfferResponse';
 
     return 1;
@@ -160,8 +167,25 @@ _EOT_
     return %user;
 }
 
+sub testxml(){
+    return q{};
+}
 
 1;
 __END__
-
+    return << '_EOT_';
+<?xml version='1.0' standalone='yes'?>
+<PlaceOfferResponse xmlns="urn:ebay:apis:eBLBaseComponents">
+  <Ack>Failure</Ack>
+  <Errors>
+    <ErrorClassification>RequestError</ErrorClassification>
+    <ErrorCode>21916658</ErrorCode>
+    ...
+    <LongMessage>Your bid amount should be higher than your last bid.</LongMessage>
+    <SeverityCode>Error</SeverityCode>
+    <ShortMessage>Invalid bid for high bidder</ShortMessage>      !!! OK
+  </Errors>
+  ...
+</PlaceOfferResponse>
+_EOT_
 
