@@ -29,7 +29,7 @@ if( not defined($USER_TOKEN) or $USER_TOKEN eq q{} ){
     exit $USAGE_CODE;
 }
 
-if( not $ARGV[1] > 0 or not looks_like_number($ARGV[1]) or $ARGV[1] <= 0  ){
+if( not defined($ARGV[1]) or not $ARGV[1] > 0 or not looks_like_number($ARGV[1]) or $ARGV[1] <= 0  ){
     print "Usage: placeoffer.pl <ItemID> <MaxBid> [CurrencyID]\n";
     exit $USAGE_CODE;
 }
