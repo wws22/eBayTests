@@ -48,7 +48,7 @@ if(! $res->is_success){
 my $xpa = XML::XPath->new( xml => $res->content );
 my $sessionID = $xpa->getNodeText('/GetSessionIDResponse/SessionID');
 
-if( $sessionID eq q{  } ){
+if( $sessionID eq q{} ){
     die "There are no SessioID in response:\n".$res->content."\n";
 }
 

@@ -85,7 +85,7 @@ _EOT_
         die "Something wrong:\n".$res->content."\n";
     }else{
 
-        if( $USER_TOKEN_FILE ne q{ } ){
+        if( $USER_TOKEN_FILE ne q{} ){
             if( open( my $fh, '>', $USER_TOKEN_FILE ) ) {
                 print $fh $token;
                 close($fh) or croak "Can't close $USER_TOKEN_FILE\n";
