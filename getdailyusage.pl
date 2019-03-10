@@ -47,9 +47,10 @@ my $xpa = XML::XPath->new( xml => $res->content );
 my $usage = $xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/DailyUsage');
 
 if( $usage ne q{} ){
-    print "Timestamp: ".$xpa->getNodeText('/GetApiAccessRulesResponse/Timestamp')."\n";
-    print "ModTime  : ".$xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/ModTime')."\n";
-    print "Total requests: $usage\n";
+    print "Timestamp   : ".$xpa->getNodeText('/GetApiAccessRulesResponse/Timestamp')."\n";
+    print "ModTime     : ".$xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/ModTime')."\n";
+    print "Hourly usage: ".$xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/HourlyUsage')."\n";
+    print "Daily  usage: $usage\n";
 }else{
     die XMLout( XMLin($res->content, forcearray => 1), xmldecl => 1, rootname => 'GetApiAccessResponse');
 }
