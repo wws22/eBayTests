@@ -48,7 +48,6 @@ my $usage = $xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/
 
 if( $usage ne q{} ){
     print "Timestamp   : ".$xpa->getNodeText('/GetApiAccessRulesResponse/Timestamp')."\n";
-    print "ModTime     : ".$xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/ModTime')."\n";
     print "Hourly usage: ".$xpa->getNodeText('//ApiAccessRule[CallName="ApplicationAggregate"]/HourlyUsage')."\n";
     print "Daily  usage: $usage\n";
 }else{
